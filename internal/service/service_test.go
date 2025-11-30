@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ride4Low/trip-service/internal/domain"
+	"github.com/ride4Low/contracts/types"
 )
 
 func TestCreateTrip(t *testing.T) {
@@ -44,8 +44,8 @@ func TestGetRoute(t *testing.T) {
 		svc := NewService(mockServer.URL)
 
 		// Test GetRoute
-		pickup := domain.Coordinates{Latitude: 13.736717, Longitude: 100.523186}
-		dropoff := domain.Coordinates{Latitude: 13.736717, Longitude: 100.523186}
+		pickup := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
+		dropoff := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 
 		result, err := svc.GetRoute(context.Background(), pickup, dropoff)
 
@@ -77,8 +77,8 @@ func TestGetRoute(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(mockServer.URL)
-		pickup := domain.Coordinates{Latitude: 13.736717, Longitude: 100.523186}
-		dropoff := domain.Coordinates{Latitude: 13.736717, Longitude: 100.523186}
+		pickup := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
+		dropoff := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 
 		result, err := svc.GetRoute(context.Background(), pickup, dropoff)
 
@@ -98,8 +98,8 @@ func TestGetRoute(t *testing.T) {
 		defer mockServer.Close()
 
 		svc := NewService(mockServer.URL)
-		pickup := domain.Coordinates{Latitude: 13.736717, Longitude: 100.523186}
-		dropoff := domain.Coordinates{Latitude: 13.736717, Longitude: 100.523186}
+		pickup := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
+		dropoff := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 
 		result, err := svc.GetRoute(context.Background(), pickup, dropoff)
 

@@ -3,6 +3,7 @@ package domain
 import (
 	"time"
 
+	"github.com/ride4Low/contracts/proto/trip"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -32,7 +33,24 @@ type OsrmApiResponse struct {
 	} `json:"routes"`
 }
 
-type Coordinates struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
+func (o *OsrmApiResponse) ToProto() *trip.Route {
+	route := o.Routes[0]
+	geometry := route.Geometry.Coordinates
+	coordinates := make([]*trip.Coordinate, len(geometry))
+	for i, coord := range geometry {
+		coordinates[i] = &trip.Coordinate{
+			Latitude:  coord[0],
+			Longitude: coord[1],
+		}
+	}
+
+	return &trip.Route{
+		Geometry: []*trip.Geometry{
+			{
+				Coordinates: coordinates,
+			},
+		},
+		Distance: route.Distance,
+		Duration: route.Duration,
+	}
 }

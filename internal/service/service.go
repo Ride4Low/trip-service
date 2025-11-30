@@ -7,13 +7,14 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
 )
 
 // Service interface
 type Service interface {
 	CreateTrip(ctx context.Context) error
-	GetRoute(ctx context.Context, pickup, dropoff domain.Coordinates) (*domain.OsrmApiResponse, error)
+	GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error)
 }
 
 // service struct implementing Service
@@ -31,7 +32,7 @@ func (s *service) CreateTrip(ctx context.Context) error {
 	return nil
 }
 
-func (s *service) GetRoute(ctx context.Context, pickup, dropoff domain.Coordinates) (*domain.OsrmApiResponse, error) {
+func (s *service) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
 	url := fmt.Sprintf(
 		"%s/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
 		s.osrmURL,
