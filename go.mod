@@ -4,6 +4,7 @@ go 1.25.3
 
 require (
 	github.com/sithu-go/ride-share/contracts v0.0.0-00010101000000-000000000000
+	go.mongodb.org/mongo-driver v1.17.6
 	google.golang.org/grpc v1.77.0
 )
 
