@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ride4Low/contracts/proto/trip"
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,8 +23,16 @@ func NewService(routeProvider domain.RouteProvider, repo domain.Repository) doma
 	}
 }
 
-func (s *service) CreateTrip(ctx context.Context) error {
-	return nil
+func (s *service) CreateTrip(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error) {
+	t := &domain.Trip{
+		ID:       primitive.NewObjectID(),
+		UserID:   fare.UserID,
+		Status:   "pending",
+		RideFare: fare,
+		Driver:   &trip.TripDriver{},
+	}
+
+	return s.repo.CreateTrip(ctx, t)
 }
 
 func (s *service) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
@@ -52,4 +61,22 @@ func (s *service) CreateTripFares(ctx context.Context, rideFares []*domain.RideF
 	}
 
 	return fares, nil
+}
+
+func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string) (*domain.RideFare, error) {
+	fare, err := s.repo.GetRideFareByID(ctx, fareID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get trip fare: %w", err)
+	}
+
+	if fare == nil {
+		return nil, fmt.Errorf("fare does not exist")
+	}
+
+	// User fare validation (user is owner of this fare?)
+	if userID != fare.UserID {
+		return nil, fmt.Errorf("fare does not belong to the user")
+	}
+
+	return fare, nil
 }

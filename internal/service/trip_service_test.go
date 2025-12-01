@@ -17,6 +17,8 @@ import (
 type mockRepository struct {
 	saveTripFunc     func(ctx context.Context) error
 	saveRideFareFunc func(ctx context.Context, rideFare *domain.RideFare) error
+	getRideFareFunc  func(ctx context.Context, fareID string) (*domain.RideFare, error)
+	createTripFunc   func(ctx context.Context, fare *domain.Trip) (*domain.Trip, error)
 }
 
 func (m *mockRepository) SaveTrip(ctx context.Context) error {
@@ -33,14 +35,32 @@ func (m *mockRepository) SaveRideFare(ctx context.Context, rideFare *domain.Ride
 	return nil
 }
 
+func (m *mockRepository) GetRideFareByID(ctx context.Context, fareID string) (*domain.RideFare, error) {
+	if m.getRideFareFunc != nil {
+		return m.getRideFareFunc(ctx, fareID)
+	}
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockRepository) CreateTrip(ctx context.Context, trip *domain.Trip) (*domain.Trip, error) {
+	if m.createTripFunc != nil {
+		return m.createTripFunc(ctx, trip)
+	}
+	return nil, errors.New("not implemented")
+}
+
 func TestCreateTrip(t *testing.T) {
 	t.Run("successful trip creation", func(t *testing.T) {
 		// Setup
-		mockRepo := &mockRepository{}
+		mockRepo := &mockRepository{
+			createTripFunc: func(ctx context.Context, trip *domain.Trip) (*domain.Trip, error) {
+				return trip, nil
+			},
+		}
 		svc := NewService(nil, mockRepo)
 
 		// Execute
-		err := svc.CreateTrip(context.Background())
+		_, err := svc.CreateTrip(context.Background(), nil)
 
 		// Verify
 		if err != nil {

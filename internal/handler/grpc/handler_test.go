@@ -17,6 +17,8 @@ type mockService struct {
 	getRouteFunc                       func(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error)
 	estimatePackagesPriceWithRouteFunc func(route *domain.OsrmApiResponse) []*domain.RideFare
 	createTripFaresFunc                func(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error)
+	getAndValidateFareFunc             func(ctx context.Context, fareID, userID string) (*domain.RideFare, error)
+	createTripFunc                     func(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error)
 }
 
 func (m *mockService) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
@@ -26,8 +28,11 @@ func (m *mockService) GetRoute(ctx context.Context, pickup, dropoff types.Coordi
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockService) CreateTrip(ctx context.Context) error {
-	return nil
+func (m *mockService) CreateTrip(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error) {
+	if m.createTripFunc != nil {
+		return m.createTripFunc(ctx, fare)
+	}
+	return nil, errors.New("not implemented")
 }
 
 func (m *mockService) EstimatePackagesPriceWithRoute(route *domain.OsrmApiResponse) []*domain.RideFare {
@@ -35,6 +40,13 @@ func (m *mockService) EstimatePackagesPriceWithRoute(route *domain.OsrmApiRespon
 		return m.estimatePackagesPriceWithRouteFunc(route)
 	}
 	return nil
+}
+
+func (m *mockService) GetAndValidateFare(ctx context.Context, fareID, userID string) (*domain.RideFare, error) {
+	if m.getAndValidateFareFunc != nil {
+		return m.getAndValidateFareFunc(ctx, fareID, userID)
+	}
+	return nil, errors.New("not implemented")
 }
 
 func (m *mockService) CreateTripFares(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
@@ -85,6 +97,9 @@ func TestPreviewTrip(t *testing.T) {
 			},
 			createTripFaresFunc: func(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
 				return []*domain.RideFare{}, nil
+			},
+			createTripFunc: func(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error) {
+				return &domain.Trip{}, nil
 			},
 		}
 

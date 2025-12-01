@@ -25,6 +25,29 @@ func NewHandler(server *grpc.Server, svc domain.Service) *handler {
 	return h
 }
 
+func (h *handler) CreateTrip(ctx context.Context, req *trip.CreateTripRequest) (*trip.CreateTripResponse, error) {
+	fareID := req.GetRideFareID()
+	userID := req.GetUserID()
+
+	rideFare, err := h.svc.GetAndValidateFare(ctx, fareID, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to get and validate the fare: %v", err)
+	}
+
+	t, err := h.svc.CreateTrip(ctx, rideFare)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create the trip: %v", err)
+	}
+
+	// if err := h.publisher.PublishTripCreated(ctx, trip); err != nil {
+	// 	return nil, status.Errorf(codes.Internal, "failed to publish the trip created event: %v", err)
+	// }
+
+	return &trip.CreateTripResponse{
+		TripID: t.ID.Hex(),
+	}, nil
+}
+
 func (h *handler) PreviewTrip(ctx context.Context, req *trip.PreviewTripRequest) (*trip.PreviewTripResponse, error) {
 	pickup := req.GetPickupLocation()
 	dropoff := req.GetDropoffLocation()

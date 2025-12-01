@@ -12,6 +12,7 @@ type Trip struct {
 	UserID   string             `bson:"userID"`
 	Status   string             `bson:"status"`
 	RideFare *RideFare          `bson:"rideFare"`
+	Driver   *trip.TripDriver   `bson:"driver"`
 }
 
 type RideFare struct {
