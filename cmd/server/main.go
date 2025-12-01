@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/ride4Low/contracts/pkg/db"
+	"github.com/ride4Low/trip-service/internal/repository"
 	"github.com/ride4Low/trip-service/internal/service"
 	"github.com/sithu-go/ride-share/contracts/env"
 	"google.golang.org/grpc"
@@ -32,7 +34,14 @@ func main() {
 		cancel()
 	}()
 
-	svc := service.NewService(osrmURL)
+	dbCfg := db.NewMongoDefaultConfig()
+	mongoClient, err := db.NewMongoClient(dbCfg)
+	if err != nil {
+		log.Fatalf("failed to connect to MongoDB: %v", err)
+	}
+	repo := repository.NewRepository(db.GetDatabase(mongoClient, dbCfg.Database))
+
+	svc := service.NewService(osrmURL, repo)
 
 	lis, err := net.Listen("tcp", grpcAddr)
 	if err != nil {

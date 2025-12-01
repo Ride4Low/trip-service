@@ -23,6 +23,15 @@ type RideFare struct {
 	CreatedAt         time.Time          `bson:"created_at"`
 }
 
+func (r *RideFare) ToProto() *trip.RideFare {
+	return &trip.RideFare{
+		Id:                r.ID.Hex(),
+		UserID:            r.UserID,
+		PackageSlug:       r.PackageSlug,
+		TotalPriceInCents: r.TotalPriceInCents,
+	}
+}
+
 type OsrmApiResponse struct {
 	Routes []struct {
 		Distance float64 `json:"distance"`
@@ -53,4 +62,24 @@ func (o *OsrmApiResponse) ToProto() *trip.Route {
 		Distance: route.Distance,
 		Duration: route.Duration,
 	}
+}
+
+type PricingConfig struct {
+	PricePerUnitOfDistance float64
+	PricingPerMinute       float64
+}
+
+func DefaultPricingConfig() *PricingConfig {
+	return &PricingConfig{
+		PricePerUnitOfDistance: 1.5,
+		PricingPerMinute:       0.25,
+	}
+}
+
+func ToRideFaresProto(fares []*RideFare) []*trip.RideFare {
+	var protoFares []*trip.RideFare
+	for _, f := range fares {
+		protoFares = append(protoFares, f.ToProto())
+	}
+	return protoFares
 }

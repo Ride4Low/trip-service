@@ -5,7 +5,7 @@ import (
 
 	"github.com/ride4Low/contracts/proto/trip"
 	"github.com/ride4Low/contracts/types"
-	"github.com/ride4Low/trip-service/internal/service"
+	"github.com/ride4Low/trip-service/internal/domain"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,10 +14,10 @@ import (
 // Handler struct placeholder
 type handler struct {
 	trip.UnimplementedTripServiceServer
-	svc service.Service
+	svc domain.Service
 }
 
-func NewHandler(server *grpc.Server, svc service.Service) *handler {
+func NewHandler(server *grpc.Server, svc domain.Service) *handler {
 	h := &handler{
 		svc: svc,
 	}
@@ -48,7 +48,15 @@ func (h *handler) PreviewTrip(ctx context.Context, req *trip.PreviewTripRequest)
 		return nil, status.Error(codes.Internal, "failed to get route")
 	}
 
+	estimatedFares := h.svc.EstimatePackagesPriceWithRoute(osrmResponse)
+
+	fares, err := h.svc.GenerateTripFares(ctx, estimatedFares, req.GetUserID(), osrmResponse)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate the ride fares: %v", err)
+	}
+
 	return &trip.PreviewTripResponse{
-		Route: osrmResponse.ToProto(),
+		Route:     osrmResponse.ToProto(),
+		RideFares: domain.ToRideFaresProto(fares),
 	}, nil
 }

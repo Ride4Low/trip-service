@@ -9,22 +9,19 @@ import (
 
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-// Service interface
-type Service interface {
-	CreateTrip(ctx context.Context) error
-	GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error)
-}
 
 // service struct implementing Service
 type service struct {
 	osrmURL string
+	repo    domain.Repository
 }
 
-func NewService(osrmURL string) Service {
+func NewService(osrmURL string, repo domain.Repository) domain.Service {
 	return &service{
 		osrmURL: osrmURL,
+		repo:    repo,
 	}
 }
 
@@ -61,4 +58,28 @@ func (s *service) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate
 	}
 
 	return &osrmResponse, nil
+}
+
+func (s *service) GenerateTripFares(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
+	fares := make([]*domain.RideFare, len(rideFares))
+
+	for i, f := range rideFares {
+		id := primitive.NewObjectID()
+
+		fare := &domain.RideFare{
+			UserID:            userID,
+			ID:                id,
+			TotalPriceInCents: f.TotalPriceInCents,
+			PackageSlug:       f.PackageSlug,
+			Route:             route,
+		}
+
+		if err := s.repo.SaveRideFare(ctx, fare); err != nil {
+			return nil, fmt.Errorf("failed to save trip fare: %w", err)
+		}
+
+		fares[i] = fare
+	}
+
+	return fares, nil
 }
