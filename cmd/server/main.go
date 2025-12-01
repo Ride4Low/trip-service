@@ -8,7 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ride4Low/contracts/pkg/db"
+	"github.com/ride4Low/trip-service/internal/adapter/mongo"
+	"github.com/ride4Low/trip-service/internal/adapter/osrm"
 	"github.com/ride4Low/trip-service/internal/repository"
 	"github.com/ride4Low/trip-service/internal/service"
 	"github.com/sithu-go/ride-share/contracts/env"
@@ -34,14 +35,15 @@ func main() {
 		cancel()
 	}()
 
-	dbCfg := db.NewMongoDefaultConfig()
-	mongoClient, err := db.NewMongoClient(dbCfg)
+	dbCfg := mongo.NewMongoDefaultConfig()
+	mongoClient, err := mongo.NewMongoClient(dbCfg)
 	if err != nil {
 		log.Fatalf("failed to connect to MongoDB: %v", err)
 	}
-	repo := repository.NewRepository(db.GetDatabase(mongoClient, dbCfg.Database))
+	repo := repository.NewRepository(mongo.GetDatabase(mongoClient, dbCfg.Database))
 
-	svc := service.NewService(osrmURL, repo)
+	osrmClient := osrm.NewClient(osrmURL)
+	svc := service.NewService(osrmClient, repo)
 
 	lis, err := net.Listen("tcp", grpcAddr)
 	if err != nil {

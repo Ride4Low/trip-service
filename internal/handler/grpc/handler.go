@@ -50,7 +50,7 @@ func (h *handler) PreviewTrip(ctx context.Context, req *trip.PreviewTripRequest)
 
 	estimatedFares := h.svc.EstimatePackagesPriceWithRoute(osrmResponse)
 
-	fares, err := h.svc.GenerateTripFares(ctx, estimatedFares, req.GetUserID(), osrmResponse)
+	fares, err := h.svc.CreateTripFares(ctx, estimatedFares, req.GetUserID(), osrmResponse)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate the ride fares: %v", err)
 	}

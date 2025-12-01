@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ride4Low/contracts/types"
+	"github.com/ride4Low/trip-service/internal/adapter/osrm"
 )
 
 func TestCreateTrip(t *testing.T) {
@@ -41,7 +42,7 @@ func TestGetRoute(t *testing.T) {
 		defer mockServer.Close()
 
 		// Create service with mock server URL
-		svc := NewService(mockServer.URL, nil)
+		svc := NewService(osrm.NewClient(mockServer.URL), nil)
 
 		// Test GetRoute
 		pickup := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
@@ -76,7 +77,7 @@ func TestGetRoute(t *testing.T) {
 		}))
 		defer mockServer.Close()
 
-		svc := NewService(mockServer.URL, nil)
+		svc := NewService(osrm.NewClient(mockServer.URL), nil)
 		pickup := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 		dropoff := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 
@@ -97,7 +98,7 @@ func TestGetRoute(t *testing.T) {
 		}))
 		defer mockServer.Close()
 
-		svc := NewService(mockServer.URL, nil)
+		svc := NewService(osrm.NewClient(mockServer.URL), nil)
 		pickup := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 		dropoff := types.Coordinate{Latitude: 13.736717, Longitude: 100.523186}
 
