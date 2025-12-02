@@ -2,11 +2,11 @@ package osrm
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/bytedance/sonic"
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
 )
@@ -45,7 +45,7 @@ func (c *Client) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate)
 	}
 
 	var osrmResponse domain.OsrmApiResponse
-	if err := json.Unmarshal(body, &osrmResponse); err != nil {
+	if err := sonic.Unmarshal(body, &osrmResponse); err != nil {
 		return nil, err
 	}
 

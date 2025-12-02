@@ -15,6 +15,17 @@ type Trip struct {
 	Driver   *trip.TripDriver   `bson:"driver"`
 }
 
+func (t *Trip) ToProto() *trip.Trip {
+	return &trip.Trip{
+		Id:           t.ID.Hex(),
+		UserID:       t.UserID,
+		SelectedFare: t.RideFare.ToProto(),
+		Status:       t.Status,
+		Driver:       t.Driver,
+		Route:        t.RideFare.Route.ToProto(),
+	}
+}
+
 type RideFare struct {
 	ID                primitive.ObjectID `bson:"_id,omitempty"`
 	UserID            string             `bson:"userID"`
