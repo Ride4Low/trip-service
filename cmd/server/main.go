@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/ride4Low/contracts/env"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
 	"github.com/ride4Low/trip-service/internal/adapter/osrm"
 	"github.com/ride4Low/trip-service/internal/repository"
 	"github.com/ride4Low/trip-service/internal/service"
-	"github.com/sithu-go/ride-share/contracts/env"
 	"google.golang.org/grpc"
 
 	grpcHandler "github.com/ride4Low/trip-service/internal/handler/grpc"
