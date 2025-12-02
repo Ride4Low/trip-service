@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ride4Low/contracts/events"
+	"github.com/ride4Low/contracts/messaging"
 	"github.com/ride4Low/contracts/pkg/rabbitmq"
 	"github.com/ride4Low/trip-service/internal/domain"
 )
@@ -18,12 +19,13 @@ func NewTripEventPublisher(rmq *rabbitmq.RabbitMQ) TripEventPublisher {
 	}
 }
 
-func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip domain.Trip) error {
+// will be consumed by driver service to find available drivers
+func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domain.Trip) error {
 	payload := events.TripEventData{
 		Trip: trip.ToProto(),
 	}
 
-	amqpMsg := events.AmqpMessage{
+	amqpMsg := messaging.AmqpMessage{
 		OwnerID: trip.UserID,
 		Data:    payload,
 	}

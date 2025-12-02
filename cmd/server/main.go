@@ -9,8 +9,10 @@ import (
 	"syscall"
 
 	"github.com/ride4Low/contracts/env"
+	amqpClient "github.com/ride4Low/contracts/pkg/rabbitmq"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
 	"github.com/ride4Low/trip-service/internal/adapter/osrm"
+	"github.com/ride4Low/trip-service/internal/events/rabbitmq"
 	"github.com/ride4Low/trip-service/internal/repository"
 	"github.com/ride4Low/trip-service/internal/service"
 	"google.golang.org/grpc"
@@ -19,8 +21,9 @@ import (
 )
 
 var (
-	grpcAddr = env.GetString("GRPC_ADDR", "0.0.0.0:9093")
-	osrmURL  = env.GetString("OSRM_URL", "http://router.project-osrm.org/")
+	grpcAddr    = env.GetString("GRPC_ADDR", "0.0.0.0:9093")
+	osrmURL     = env.GetString("OSRM_URL", "http://router.project-osrm.org/")
+	rabbitMqURI = env.GetString("RABBITMQ_URI", "amqp://guest:guest@localhost:5672")
 )
 
 func main() {
@@ -50,8 +53,16 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	amqp, err := amqpClient.NewRabbitMQ(rabbitMqURI)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer amqp.Close()
+
+	tripPublisher := rabbitmq.NewTripEventPublisher(amqp)
+
 	grpcServer := grpc.NewServer()
-	grpcHandler.NewHandler(grpcServer, svc)
+	grpcHandler.NewHandler(grpcServer, svc, tripPublisher)
 
 	go func() {
 		log.Printf("Server listening on %s", grpcAddr)

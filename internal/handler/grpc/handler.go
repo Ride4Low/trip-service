@@ -6,6 +6,7 @@ import (
 	"github.com/ride4Low/contracts/proto/trip"
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
+	"github.com/ride4Low/trip-service/internal/events/rabbitmq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,12 +15,14 @@ import (
 // Handler struct placeholder
 type handler struct {
 	trip.UnimplementedTripServiceServer
-	svc domain.Service
+	svc       domain.Service
+	publisher rabbitmq.TripEventPublisher
 }
 
-func NewHandler(server *grpc.Server, svc domain.Service) *handler {
+func NewHandler(server *grpc.Server, svc domain.Service, publisher rabbitmq.TripEventPublisher) *handler {
 	h := &handler{
-		svc: svc,
+		svc:       svc,
+		publisher: publisher,
 	}
 	trip.RegisterTripServiceServer(server, h)
 	return h
@@ -39,9 +42,9 @@ func (h *handler) CreateTrip(ctx context.Context, req *trip.CreateTripRequest) (
 		return nil, status.Errorf(codes.Internal, "failed to create the trip: %v", err)
 	}
 
-	// if err := h.publisher.PublishTripCreated(ctx, trip); err != nil {
-	// 	return nil, status.Errorf(codes.Internal, "failed to publish the trip created event: %v", err)
-	// }
+	if err := h.publisher.PublishTripCreated(ctx, t); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to publish the trip created event: %v", err)
+	}
 
 	return &trip.CreateTripResponse{
 		TripID: t.ID.Hex(),
