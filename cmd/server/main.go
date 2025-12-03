@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	grpcAddr    = env.GetString("GRPC_ADDR", "0.0.0.0:9093")
+	grpcAddr    = ":9093"
 	osrmURL     = env.GetString("OSRM_URL", "http://router.project-osrm.org/")
 	rabbitMqURI = env.GetString("RABBITMQ_URI", "amqp://guest:guest@localhost:5672")
 )
