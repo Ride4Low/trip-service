@@ -2,20 +2,21 @@ package rabbitmq
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/bytedance/sonic"
 	"github.com/ride4Low/contracts/events"
-	"github.com/ride4Low/contracts/messaging"
 	"github.com/ride4Low/contracts/pkg/rabbitmq"
 	"github.com/ride4Low/trip-service/internal/domain"
 )
 
 type TripEventPublisher struct {
-	rabbitMQ *rabbitmq.RabbitMQ
+	publisher *rabbitmq.Publisher
 }
 
-func NewTripEventPublisher(rmq *rabbitmq.RabbitMQ) TripEventPublisher {
+func NewTripEventPublisher(publisher *rabbitmq.Publisher) TripEventPublisher {
 	return TripEventPublisher{
-		rabbitMQ: rmq,
+		publisher: publisher,
 	}
 }
 
@@ -25,10 +26,15 @@ func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domai
 		Trip: trip.ToProto(),
 	}
 
-	amqpMsg := messaging.AmqpMessage{
-		OwnerID: trip.UserID,
-		Data:    payload,
+	data, err := sonic.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal payload: %v", err)
 	}
 
-	return p.rabbitMQ.PublishMessage(ctx, events.TripEventCreated, amqpMsg)
+	amqpMsg := events.AmqpMessage{
+		OwnerID: trip.UserID,
+		Data:    data,
+	}
+
+	return p.publisher.PublishMessage(ctx, events.TripEventCreated, amqpMsg)
 }

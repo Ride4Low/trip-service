@@ -53,13 +53,14 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	amqp, err := amqpClient.NewRabbitMQ(rabbitMqURI)
+	rmq, err := amqpClient.NewRabbitMQ(rabbitMqURI)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer amqp.Close()
+	defer rmq.Close()
 
-	tripPublisher := rabbitmq.NewTripEventPublisher(amqp)
+	publisher := amqpClient.NewPublisher(rmq)
+	tripPublisher := rabbitmq.NewTripEventPublisher(publisher)
 
 	grpcServer := grpc.NewServer()
 	grpcHandler.NewHandler(grpcServer, svc, tripPublisher)
