@@ -41,6 +41,8 @@ func (c *Client) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate)
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		// print body
+		fmt.Println(string(body), url)
 		return nil, fmt.Errorf("OSRM request failed with status code: %d", resp.StatusCode)
 	}
 

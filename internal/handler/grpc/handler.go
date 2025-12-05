@@ -2,6 +2,8 @@ package grpc
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/ride4Low/contracts/proto/trip"
 	"github.com/ride4Low/contracts/types"
@@ -55,6 +57,8 @@ func (h *handler) PreviewTrip(ctx context.Context, req *trip.PreviewTripRequest)
 	pickup := req.GetPickupLocation()
 	dropoff := req.GetDropoffLocation()
 
+	log.Println("PreviewTrip")
+
 	if pickup == nil || dropoff == nil {
 		return nil, status.Error(codes.InvalidArgument, "pickup and dropoff locations are required")
 	}
@@ -71,7 +75,7 @@ func (h *handler) PreviewTrip(ctx context.Context, req *trip.PreviewTripRequest)
 
 	osrmResponse, err := h.svc.GetRoute(ctx, pickupCoordinates, dropoffCoordinates)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to get route")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get route: %v", err))
 	}
 
 	estimatedFares := h.svc.EstimatePackagesPriceWithRoute(osrmResponse)
