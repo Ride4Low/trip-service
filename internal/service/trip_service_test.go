@@ -19,6 +19,7 @@ type mockRepository struct {
 	saveRideFareFunc func(ctx context.Context, rideFare *domain.RideFare) error
 	getRideFareFunc  func(ctx context.Context, fareID string) (*domain.RideFare, error)
 	createTripFunc   func(ctx context.Context, fare *domain.Trip) (*domain.Trip, error)
+	getTripFunc      func(ctx context.Context, id string) (*domain.Trip, error)
 }
 
 func (m *mockRepository) SaveTrip(ctx context.Context) error {
@@ -45,6 +46,13 @@ func (m *mockRepository) GetRideFareByID(ctx context.Context, fareID string) (*d
 func (m *mockRepository) CreateTrip(ctx context.Context, trip *domain.Trip) (*domain.Trip, error) {
 	if m.createTripFunc != nil {
 		return m.createTripFunc(ctx, trip)
+	}
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockRepository) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+	if m.getTripFunc != nil {
+		return m.getTripFunc(ctx, id)
 	}
 	return nil, errors.New("not implemented")
 }

@@ -19,6 +19,7 @@ type mockService struct {
 	createTripFaresFunc                func(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error)
 	getAndValidateFareFunc             func(ctx context.Context, fareID, userID string) (*domain.RideFare, error)
 	createTripFunc                     func(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error)
+	getTripFunc                        func(ctx context.Context, id string) (*domain.Trip, error)
 }
 
 func (m *mockService) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
@@ -52,6 +53,13 @@ func (m *mockService) GetAndValidateFare(ctx context.Context, fareID, userID str
 func (m *mockService) CreateTripFares(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
 	if m.createTripFaresFunc != nil {
 		return m.createTripFaresFunc(ctx, rideFares, userID, route)
+	}
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockService) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+	if m.getTripFunc != nil {
+		return m.getTripFunc(ctx, id)
 	}
 	return nil, errors.New("not implemented")
 }

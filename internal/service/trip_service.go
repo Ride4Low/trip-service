@@ -80,3 +80,7 @@ func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string)
 
 	return fare, nil
 }
+
+func (s *service) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+	return s.repo.GetTripByID(ctx, id)
+}

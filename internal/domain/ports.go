@@ -13,6 +13,7 @@ type Service interface {
 	EstimatePackagesPriceWithRoute(route *OsrmApiResponse) []*RideFare
 	CreateTripFares(ctx context.Context, fares []*RideFare, userID string, route *OsrmApiResponse) ([]*RideFare, error)
 	GetAndValidateFare(ctx context.Context, fareID, userID string) (*RideFare, error)
+	GetTripByID(ctx context.Context, id string) (*Trip, error)
 }
 
 // Repository interface
@@ -20,6 +21,7 @@ type Repository interface {
 	SaveRideFare(ctx context.Context, rideFare *RideFare) error
 	GetRideFareByID(ctx context.Context, id string) (*RideFare, error)
 	CreateTrip(ctx context.Context, trip *Trip) (*Trip, error)
+	GetTripByID(ctx context.Context, id string) (*Trip, error)
 }
 
 // RouteProvider interface

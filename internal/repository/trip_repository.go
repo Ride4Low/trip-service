@@ -64,3 +64,23 @@ func (r *mongoRepository) CreateTrip(ctx context.Context, trip *domain.Trip) (*d
 
 	return trip, nil
 }
+
+func (r *mongoRepository) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+	_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := r.db.Collection(mongo.TripsCollection).FindOne(ctx, bson.M{"_id": _id})
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+
+	var trip domain.Trip
+	err = result.Decode(&trip)
+	if err != nil {
+		return nil, err
+	}
+
+	return &trip, nil
+}
