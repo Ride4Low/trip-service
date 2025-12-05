@@ -88,6 +88,27 @@ func (h *DriverEventHandler) handleTripAccept(ctx context.Context, message event
 		return fmt.Errorf("failed to publish message: %v", err)
 	}
 
+	// 4. Notify the payment service to create a payment session
+	marshalledPayload, err := sonic.Marshal(events.PaymentTripResponseData{
+		TripID:   payload.TripID,
+		UserID:   trip.UserID,
+		DriverID: payload.Driver.Id,
+		Amount:   trip.RideFare.TotalPriceInCents,
+		Currency: "USD",
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := h.publisher.PublishMessage(ctx, events.PaymentCmdCreateSession,
+		events.AmqpMessage{
+			OwnerID: payload.RiderID,
+			Data:    marshalledPayload,
+		},
+	); err != nil {
+		return fmt.Errorf("failed to publish message: %v", err)
+	}
+
 	return nil
 }
 
