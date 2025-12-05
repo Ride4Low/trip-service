@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/ride4Low/contracts/env"
+	"github.com/ride4Low/contracts/events"
 	amqpClient "github.com/ride4Low/contracts/pkg/rabbitmq"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
 	"github.com/ride4Low/trip-service/internal/adapter/osrm"
@@ -61,6 +62,12 @@ func main() {
 
 	publisher := amqpClient.NewPublisher(rmq)
 	tripPublisher := rabbitmq.NewTripEventPublisher(publisher)
+
+	driverEventHandler := rabbitmq.NewDriverEventHandler(publisher, svc)
+	driverConsumer := amqpClient.NewConsumer(rmq, driverEventHandler)
+	if err := driverConsumer.Consume(ctx, events.DriverTripResponseQueue); err != nil {
+		log.Fatal(err)
+	}
 
 	grpcServer := grpc.NewServer()
 	grpcHandler.NewHandler(grpcServer, svc, tripPublisher)

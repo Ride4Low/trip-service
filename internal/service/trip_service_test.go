@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ride4Low/contracts/proto/driver"
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/adapter/osrm"
 	"github.com/ride4Low/trip-service/internal/domain"
@@ -20,6 +21,7 @@ type mockRepository struct {
 	getRideFareFunc  func(ctx context.Context, fareID string) (*domain.RideFare, error)
 	createTripFunc   func(ctx context.Context, fare *domain.Trip) (*domain.Trip, error)
 	getTripFunc      func(ctx context.Context, id string) (*domain.Trip, error)
+	updateTripFunc   func(ctx context.Context, tripID string, status string, driver *driver.Driver) error
 }
 
 func (m *mockRepository) SaveTrip(ctx context.Context) error {
@@ -55,6 +57,13 @@ func (m *mockRepository) GetTripByID(ctx context.Context, id string) (*domain.Tr
 		return m.getTripFunc(ctx, id)
 	}
 	return nil, errors.New("not implemented")
+}
+
+func (m *mockRepository) UpdateTrip(ctx context.Context, tripID string, status string, driver *driver.Driver) error {
+	if m.updateTripFunc != nil {
+		return m.updateTripFunc(ctx, tripID, status, driver)
+	}
+	return errors.New("not implemented")
 }
 
 func TestCreateTrip(t *testing.T) {

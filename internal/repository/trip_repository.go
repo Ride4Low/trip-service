@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/ride4Low/contracts/proto/driver"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
 	"github.com/ride4Low/trip-service/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
@@ -83,4 +85,27 @@ func (r *mongoRepository) GetTripByID(ctx context.Context, id string) (*domain.T
 	}
 
 	return &trip, nil
+}
+
+func (r *mongoRepository) UpdateTrip(ctx context.Context, tripID string, status string, driver *driver.Driver) error {
+	_id, err := primitive.ObjectIDFromHex(tripID)
+	if err != nil {
+		return err
+	}
+
+	update := bson.M{"$set": bson.M{"status": status}}
+
+	if driver != nil {
+		update["$set"].(bson.M)["driver"] = driver
+	}
+
+	result, err := r.db.Collection(mongo.TripsCollection).UpdateOne(ctx, bson.M{"_id": _id}, update)
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		return fmt.Errorf("trip not found: %s", tripID)
+	}
+	return nil
 }

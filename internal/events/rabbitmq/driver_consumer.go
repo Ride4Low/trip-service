@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/bytedance/sonic"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -45,6 +46,48 @@ func (h *DriverEventHandler) Handle(ctx context.Context, msg amqp.Delivery) erro
 }
 
 func (h *DriverEventHandler) handleTripAccept(ctx context.Context, message events.AmqpMessage) error {
+	var payload events.DriverTripResponseData
+	if err := sonic.Unmarshal(message.Data, &payload); err != nil {
+		return fmt.Errorf("failed to unmarshal message: %v", err)
+	}
+
+	// 1. Fetch the first
+	trip, err := h.service.GetTripByID(ctx, payload.TripID)
+	if err != nil {
+		return err
+	}
+
+	if trip == nil {
+		return fmt.Errorf("trrip was not found %s", payload.TripID)
+	}
+
+	// 2. Update the trip
+	if err := h.service.UpdateTrip(ctx, payload.TripID, "accepted", payload.Driver); err != nil {
+		log.Printf("Failed to update the trip: %v", err)
+		return err
+	}
+
+	trip, err = h.service.GetTripByID(ctx, payload.TripID)
+	if err != nil {
+		return err
+	}
+
+	// 3. Driver has been assigned -> publish this event to RB
+	// will consume by notifer for rider ws
+	marshalledTrip, err := sonic.Marshal(trip)
+	if err != nil {
+		return err
+	}
+
+	if err := h.publisher.PublishMessage(ctx, events.TripEventDriverAssigned,
+		events.AmqpMessage{
+			OwnerID: payload.RiderID,
+			Data:    marshalledTrip,
+		},
+	); err != nil {
+		return fmt.Errorf("failed to publish message: %v", err)
+	}
+
 	return nil
 }
 

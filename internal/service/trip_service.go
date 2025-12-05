@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ride4Low/contracts/proto/driver"
 	"github.com/ride4Low/contracts/proto/trip"
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
@@ -83,4 +84,8 @@ func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string)
 
 func (s *service) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
 	return s.repo.GetTripByID(ctx, id)
+}
+
+func (s *service) UpdateTrip(ctx context.Context, tripID string, status string, driver *driver.Driver) error {
+	return s.repo.UpdateTrip(ctx, tripID, status, driver)
 }
