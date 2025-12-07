@@ -69,6 +69,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	paymentEventHandler := rabbitmq.NewPaymentEventHandler(svc)
+	paymentConsumer := amqpClient.NewConsumer(rmq, paymentEventHandler)
+	if err := paymentConsumer.Consume(ctx, events.NotifyPaymentSuccessQueue); err != nil {
+		log.Fatal(err)
+	}
+
 	grpcServer := grpc.NewServer()
 	grpcHandler.NewHandler(grpcServer, svc, tripPublisher)
 
