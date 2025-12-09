@@ -10,6 +10,7 @@ import (
 
 	"github.com/ride4Low/contracts/env"
 	"github.com/ride4Low/contracts/events"
+	"github.com/ride4Low/contracts/pkg/otel"
 	amqpClient "github.com/ride4Low/contracts/pkg/rabbitmq"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
 	"github.com/ride4Low/trip-service/internal/adapter/osrm"
@@ -37,6 +38,19 @@ func main() {
 		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 		<-sigCh
 		cancel()
+	}()
+
+	otelCfg := otel.DefaultConfig("trip-service")
+	otelCfg.JaegerEndpoint = env.GetString("JAEGER_ENDPOINT", "localhost:4317")
+
+	otelProvider, err := otel.Setup(ctx, otelCfg)
+	if err != nil {
+		log.Fatalf("failed to setup otel: %v", err)
+	}
+	defer func() {
+		if err := otelProvider.Shutdown(context.Background()); err != nil {
+			log.Printf("failed to shutdown otel: %v", err)
+		}
 	}()
 
 	dbCfg := mongo.NewMongoDefaultConfig()
@@ -75,7 +89,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(otel.ServerOptions()...)
 	grpcHandler.NewHandler(grpcServer, svc, tripPublisher)
 
 	go func() {
