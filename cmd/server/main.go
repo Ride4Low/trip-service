@@ -23,9 +23,10 @@ import (
 )
 
 var (
-	grpcAddr    = ":9093"
-	osrmURL     = env.GetString("OSRM_URL", "http://router.project-osrm.org/")
-	rabbitMqURI = env.GetString("RABBITMQ_URI", "amqp://guest:guest@localhost:5672")
+	grpcAddr       = ":9093"
+	osrmURL        = env.GetString("OSRM_URL", "http://router.project-osrm.org/")
+	rabbitMqURI    = env.GetString("RABBITMQ_URI", "amqp://guest:guest@localhost:5672")
+	jaegerEndpoint = env.GetString("JAEGER_ENDPOINT", "jaeger:4317")
 )
 
 func main() {
@@ -41,7 +42,7 @@ func main() {
 	}()
 
 	otelCfg := otel.DefaultConfig("trip-service")
-	otelCfg.JaegerEndpoint = env.GetString("JAEGER_ENDPOINT", "localhost:4317")
+	otelCfg.JaegerEndpoint = jaegerEndpoint
 
 	otelProvider, err := otel.Setup(ctx, otelCfg)
 	if err != nil {
