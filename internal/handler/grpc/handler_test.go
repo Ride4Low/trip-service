@@ -8,58 +8,57 @@ import (
 	"github.com/ride4Low/contracts/proto/driver"
 	"github.com/ride4Low/contracts/proto/trip"
 	"github.com/ride4Low/contracts/types"
-	"github.com/ride4Low/trip-service/internal/domain"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // mockService is a mock implementation of service.Service for testing
 type mockService struct {
-	getRouteFunc                       func(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error)
-	estimatePackagesPriceWithRouteFunc func(route *domain.OsrmApiResponse) []*domain.RideFare
-	createTripFaresFunc                func(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error)
-	getAndValidateFareFunc             func(ctx context.Context, fareID, userID string) (*domain.RideFare, error)
-	createTripFunc                     func(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error)
-	getTripFunc                        func(ctx context.Context, id string) (*domain.Trip, error)
+	getRouteFunc                       func(ctx context.Context, pickup, dropoff types.Coordinate) (*types.OsrmApiResponse, error)
+	estimatePackagesPriceWithRouteFunc func(route *types.OsrmApiResponse) []*types.RideFare
+	createTripFaresFunc                func(ctx context.Context, rideFares []*types.RideFare, userID string, route *types.OsrmApiResponse) ([]*types.RideFare, error)
+	getAndValidateFareFunc             func(ctx context.Context, fareID, userID string) (*types.RideFare, error)
+	createTripFunc                     func(ctx context.Context, fare *types.RideFare) (*types.Trip, error)
+	getTripFunc                        func(ctx context.Context, id string) (*types.Trip, error)
 	updateTripFunc                     func(ctx context.Context, tripID string, status string, driver *driver.Driver) error
 }
 
-func (m *mockService) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
+func (m *mockService) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*types.OsrmApiResponse, error) {
 	if m.getRouteFunc != nil {
 		return m.getRouteFunc(ctx, pickup, dropoff)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockService) CreateTrip(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error) {
+func (m *mockService) CreateTrip(ctx context.Context, fare *types.RideFare) (*types.Trip, error) {
 	if m.createTripFunc != nil {
 		return m.createTripFunc(ctx, fare)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockService) EstimatePackagesPriceWithRoute(route *domain.OsrmApiResponse) []*domain.RideFare {
+func (m *mockService) EstimatePackagesPriceWithRoute(route *types.OsrmApiResponse) []*types.RideFare {
 	if m.estimatePackagesPriceWithRouteFunc != nil {
 		return m.estimatePackagesPriceWithRouteFunc(route)
 	}
 	return nil
 }
 
-func (m *mockService) GetAndValidateFare(ctx context.Context, fareID, userID string) (*domain.RideFare, error) {
+func (m *mockService) GetAndValidateFare(ctx context.Context, fareID, userID string) (*types.RideFare, error) {
 	if m.getAndValidateFareFunc != nil {
 		return m.getAndValidateFareFunc(ctx, fareID, userID)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockService) CreateTripFares(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
+func (m *mockService) CreateTripFares(ctx context.Context, rideFares []*types.RideFare, userID string, route *types.OsrmApiResponse) ([]*types.RideFare, error) {
 	if m.createTripFaresFunc != nil {
 		return m.createTripFaresFunc(ctx, rideFares, userID, route)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockService) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+func (m *mockService) GetTripByID(ctx context.Context, id string) (*types.Trip, error) {
 	if m.getTripFunc != nil {
 		return m.getTripFunc(ctx, id)
 	}
@@ -77,7 +76,7 @@ func TestPreviewTrip(t *testing.T) {
 	t.Run("successful route retrieval", func(t *testing.T) {
 		// Create mock service that returns a successful response
 		mockSvc := &mockService{
-			getRouteFunc: func(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
+			getRouteFunc: func(ctx context.Context, pickup, dropoff types.Coordinate) (*types.OsrmApiResponse, error) {
 				// Verify the coordinates are passed correctly
 				if pickup.Latitude != 13.736717 || pickup.Longitude != 100.523186 {
 					t.Errorf("unexpected pickup coordinates: %+v", pickup)
@@ -86,7 +85,7 @@ func TestPreviewTrip(t *testing.T) {
 					t.Errorf("unexpected dropoff coordinates: %+v", dropoff)
 				}
 
-				return &domain.OsrmApiResponse{
+				return &types.OsrmApiResponse{
 					Routes: []struct {
 						Distance float64 `json:"distance"`
 						Duration float64 `json:"duration"`
@@ -109,14 +108,14 @@ func TestPreviewTrip(t *testing.T) {
 					},
 				}, nil
 			},
-			estimatePackagesPriceWithRouteFunc: func(route *domain.OsrmApiResponse) []*domain.RideFare {
-				return []*domain.RideFare{}
+			estimatePackagesPriceWithRouteFunc: func(route *types.OsrmApiResponse) []*types.RideFare {
+				return []*types.RideFare{}
 			},
-			createTripFaresFunc: func(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
-				return []*domain.RideFare{}, nil
+			createTripFaresFunc: func(ctx context.Context, rideFares []*types.RideFare, userID string, route *types.OsrmApiResponse) ([]*types.RideFare, error) {
+				return []*types.RideFare{}, nil
 			},
-			createTripFunc: func(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error) {
-				return &domain.Trip{}, nil
+			createTripFunc: func(ctx context.Context, fare *types.RideFare) (*types.Trip, error) {
+				return &types.Trip{}, nil
 			},
 		}
 
@@ -223,7 +222,7 @@ func TestPreviewTrip(t *testing.T) {
 	t.Run("service returns error", func(t *testing.T) {
 		// Create mock service that returns an error
 		mockSvc := &mockService{
-			getRouteFunc: func(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
+			getRouteFunc: func(ctx context.Context, pickup, dropoff types.Coordinate) (*types.OsrmApiResponse, error) {
 				return nil, errors.New("OSRM service unavailable")
 			},
 		}

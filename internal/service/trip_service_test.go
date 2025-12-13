@@ -11,16 +11,15 @@ import (
 	"github.com/ride4Low/contracts/proto/driver"
 	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/adapter/osrm"
-	"github.com/ride4Low/trip-service/internal/domain"
 )
 
-// mockRepository is a mock implementation of domain.Repository for testing
+// mockRepository is a mock implementation of types.Repository for testing
 type mockRepository struct {
 	saveTripFunc     func(ctx context.Context) error
-	saveRideFareFunc func(ctx context.Context, rideFare *domain.RideFare) error
-	getRideFareFunc  func(ctx context.Context, fareID string) (*domain.RideFare, error)
-	createTripFunc   func(ctx context.Context, fare *domain.Trip) (*domain.Trip, error)
-	getTripFunc      func(ctx context.Context, id string) (*domain.Trip, error)
+	saveRideFareFunc func(ctx context.Context, rideFare *types.RideFare) error
+	getRideFareFunc  func(ctx context.Context, fareID string) (*types.RideFare, error)
+	createTripFunc   func(ctx context.Context, fare *types.Trip) (*types.Trip, error)
+	getTripFunc      func(ctx context.Context, id string) (*types.Trip, error)
 	updateTripFunc   func(ctx context.Context, tripID string, status string, driver *driver.Driver) error
 }
 
@@ -31,28 +30,28 @@ func (m *mockRepository) SaveTrip(ctx context.Context) error {
 	return nil
 }
 
-func (m *mockRepository) SaveRideFare(ctx context.Context, rideFare *domain.RideFare) error {
+func (m *mockRepository) SaveRideFare(ctx context.Context, rideFare *types.RideFare) error {
 	if m.saveRideFareFunc != nil {
 		return m.saveRideFareFunc(ctx, rideFare)
 	}
 	return nil
 }
 
-func (m *mockRepository) GetRideFareByID(ctx context.Context, fareID string) (*domain.RideFare, error) {
+func (m *mockRepository) GetRideFareByID(ctx context.Context, fareID string) (*types.RideFare, error) {
 	if m.getRideFareFunc != nil {
 		return m.getRideFareFunc(ctx, fareID)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockRepository) CreateTrip(ctx context.Context, trip *domain.Trip) (*domain.Trip, error) {
+func (m *mockRepository) CreateTrip(ctx context.Context, trip *types.Trip) (*types.Trip, error) {
 	if m.createTripFunc != nil {
 		return m.createTripFunc(ctx, trip)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockRepository) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+func (m *mockRepository) GetTripByID(ctx context.Context, id string) (*types.Trip, error) {
 	if m.getTripFunc != nil {
 		return m.getTripFunc(ctx, id)
 	}
@@ -70,7 +69,7 @@ func TestCreateTrip(t *testing.T) {
 	t.Run("successful trip creation", func(t *testing.T) {
 		// Setup
 		mockRepo := &mockRepository{
-			createTripFunc: func(ctx context.Context, trip *domain.Trip) (*domain.Trip, error) {
+			createTripFunc: func(ctx context.Context, trip *types.Trip) (*types.Trip, error) {
 				return trip, nil
 			},
 		}
@@ -194,9 +193,9 @@ func TestGetRoute(t *testing.T) {
 func TestCreateTripFares(t *testing.T) {
 	t.Run("successful creation of multiple fares", func(t *testing.T) {
 		// Setup
-		savedFares := []*domain.RideFare{}
+		savedFares := []*types.RideFare{}
 		mockRepo := &mockRepository{
-			saveRideFareFunc: func(ctx context.Context, rideFare *domain.RideFare) error {
+			saveRideFareFunc: func(ctx context.Context, rideFare *types.RideFare) error {
 				savedFares = append(savedFares, rideFare)
 				return nil
 			},
@@ -204,7 +203,7 @@ func TestCreateTripFares(t *testing.T) {
 		svc := NewService(nil, mockRepo)
 
 		// Create mock route
-		route := &domain.OsrmApiResponse{
+		route := &types.OsrmApiResponse{
 			Routes: []struct {
 				Distance float64 `json:"distance"`
 				Duration float64 `json:"duration"`
@@ -225,7 +224,7 @@ func TestCreateTripFares(t *testing.T) {
 		}
 
 		// Input fares
-		inputFares := []*domain.RideFare{
+		inputFares := []*types.RideFare{
 			{PackageSlug: "suv", TotalPriceInCents: 1850.0},
 			{PackageSlug: "sedan", TotalPriceInCents: 2000.0},
 			{PackageSlug: "van", TotalPriceInCents: 2050.0},
@@ -273,13 +272,13 @@ func TestCreateTripFares(t *testing.T) {
 		// Setup
 		expectedErr := errors.New("database connection failed")
 		mockRepo := &mockRepository{
-			saveRideFareFunc: func(ctx context.Context, rideFare *domain.RideFare) error {
+			saveRideFareFunc: func(ctx context.Context, rideFare *types.RideFare) error {
 				return expectedErr
 			},
 		}
 		svc := NewService(nil, mockRepo)
 
-		route := &domain.OsrmApiResponse{
+		route := &types.OsrmApiResponse{
 			Routes: []struct {
 				Distance float64 `json:"distance"`
 				Duration float64 `json:"duration"`
@@ -291,7 +290,7 @@ func TestCreateTripFares(t *testing.T) {
 			},
 		}
 
-		inputFares := []*domain.RideFare{
+		inputFares := []*types.RideFare{
 			{PackageSlug: "suv", TotalPriceInCents: 1850.0},
 		}
 
@@ -318,7 +317,7 @@ func TestCreateTripFares(t *testing.T) {
 		mockRepo := &mockRepository{}
 		svc := NewService(nil, mockRepo)
 
-		route := &domain.OsrmApiResponse{
+		route := &types.OsrmApiResponse{
 			Routes: []struct {
 				Distance float64 `json:"distance"`
 				Duration float64 `json:"duration"`
@@ -331,7 +330,7 @@ func TestCreateTripFares(t *testing.T) {
 		}
 
 		// Execute with empty array
-		result, err := svc.CreateTripFares(context.Background(), []*domain.RideFare{}, "test-user", route)
+		result, err := svc.CreateTripFares(context.Background(), []*types.RideFare{}, "test-user", route)
 
 		// Verify
 		if err != nil {

@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	"github.com/ride4Low/trip-service/internal/domain"
+	"github.com/ride4Low/contracts/types"
 )
 
 func TestEstimatePackagesPriceWithRoute(t *testing.T) {
@@ -13,7 +13,7 @@ func TestEstimatePackagesPriceWithRoute(t *testing.T) {
 	// Mock route
 	// Distance: 1000 meters
 	// Duration: 600 seconds (10 minutes)
-	route := &domain.OsrmApiResponse{
+	route := &types.OsrmApiResponse{
 		Routes: []struct {
 			Distance float64 `json:"distance"`
 			Duration float64 `json:"duration"`

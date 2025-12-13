@@ -24,8 +24,8 @@ func NewService(routeProvider domain.RouteProvider, repo domain.Repository) doma
 	}
 }
 
-func (s *service) CreateTrip(ctx context.Context, fare *domain.RideFare) (*domain.Trip, error) {
-	t := &domain.Trip{
+func (s *service) CreateTrip(ctx context.Context, fare *types.RideFare) (*types.Trip, error) {
+	t := &types.Trip{
 		ID:       primitive.NewObjectID(),
 		UserID:   fare.UserID,
 		Status:   "pending",
@@ -36,17 +36,17 @@ func (s *service) CreateTrip(ctx context.Context, fare *domain.RideFare) (*domai
 	return s.repo.CreateTrip(ctx, t)
 }
 
-func (s *service) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
+func (s *service) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*types.OsrmApiResponse, error) {
 	return s.routeProvider.GetRoute(ctx, pickup, dropoff)
 }
 
-func (s *service) CreateTripFares(ctx context.Context, rideFares []*domain.RideFare, userID string, route *domain.OsrmApiResponse) ([]*domain.RideFare, error) {
-	fares := make([]*domain.RideFare, len(rideFares))
+func (s *service) CreateTripFares(ctx context.Context, rideFares []*types.RideFare, userID string, route *types.OsrmApiResponse) ([]*types.RideFare, error) {
+	fares := make([]*types.RideFare, len(rideFares))
 
 	for i, f := range rideFares {
 		id := primitive.NewObjectID()
 
-		fare := &domain.RideFare{
+		fare := &types.RideFare{
 			UserID:            userID,
 			ID:                id,
 			TotalPriceInCents: f.TotalPriceInCents,
@@ -64,7 +64,7 @@ func (s *service) CreateTripFares(ctx context.Context, rideFares []*domain.RideF
 	return fares, nil
 }
 
-func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string) (*domain.RideFare, error) {
+func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string) (*types.RideFare, error) {
 	fare, err := s.repo.GetRideFareByID(ctx, fareID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get trip fare: %w", err)
@@ -82,7 +82,7 @@ func (s *service) GetAndValidateFare(ctx context.Context, fareID, userID string)
 	return fare, nil
 }
 
-func (s *service) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+func (s *service) GetTripByID(ctx context.Context, id string) (*types.Trip, error) {
 	return s.repo.GetTripByID(ctx, id)
 }
 

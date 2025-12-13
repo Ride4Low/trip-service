@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
-	"github.com/ride4Low/trip-service/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
@@ -48,7 +48,7 @@ func (r *mockMongoRepository) SaveTrip(ctx context.Context) error {
 	return nil
 }
 
-func (r *mockMongoRepository) SaveRideFare(ctx context.Context, rideFare *domain.RideFare) error {
+func (r *mockMongoRepository) SaveRideFare(ctx context.Context, rideFare *types.RideFare) error {
 	rideFare.CreatedAt = time.Now()
 	result, err := r.mockDB.Collection(mongo.RideFaresCollection).InsertOne(ctx, rideFare)
 	if err != nil {
@@ -84,9 +84,9 @@ func TestSaveRideFare(t *testing.T) {
 				mongo.RideFaresCollection: {
 					insertOneFunc: func(ctx context.Context, document interface{}) (*mongoDriver.InsertOneResult, error) {
 						// Verify the document has CreatedAt set
-						fare, ok := document.(*domain.RideFare)
+						fare, ok := document.(*types.RideFare)
 						if !ok {
-							t.Error("expected document to be *domain.RideFare")
+							t.Error("expected document to be *types.RideFare")
 						}
 						if fare.CreatedAt.IsZero() {
 							t.Error("expected CreatedAt to be set before insertion")
@@ -98,7 +98,7 @@ func TestSaveRideFare(t *testing.T) {
 		}
 		repo := &mockMongoRepository{mockDB: mockDB}
 
-		rideFare := &domain.RideFare{
+		rideFare := &types.RideFare{
 			UserID:            "user-123",
 			PackageSlug:       "suv",
 			TotalPriceInCents: 1850.0,
@@ -144,7 +144,7 @@ func TestSaveRideFare(t *testing.T) {
 		}
 		repo := &mockMongoRepository{mockDB: mockDB}
 
-		rideFare := &domain.RideFare{
+		rideFare := &types.RideFare{
 			UserID:            "user-123",
 			PackageSlug:       "sedan",
 			TotalPriceInCents: 2000.0,
@@ -183,7 +183,7 @@ func TestSaveRideFare(t *testing.T) {
 		}
 		repo := &mockMongoRepository{mockDB: mockDB}
 
-		rideFare := &domain.RideFare{
+		rideFare := &types.RideFare{
 			UserID:            "user-123",
 			PackageSlug:       "van",
 			TotalPriceInCents: 2050.0,
@@ -220,7 +220,7 @@ func TestSaveRideFare(t *testing.T) {
 		}
 		repo := &mockMongoRepository{mockDB: mockDB}
 
-		fares := []*domain.RideFare{
+		fares := []*types.RideFare{
 			{UserID: "user-1", PackageSlug: "suv", TotalPriceInCents: 1850.0},
 			{UserID: "user-2", PackageSlug: "sedan", TotalPriceInCents: 2000.0},
 			{UserID: "user-3", PackageSlug: "luxury", TotalPriceInCents: 2650.0},

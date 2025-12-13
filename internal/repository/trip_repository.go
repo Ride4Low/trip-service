@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ride4Low/contracts/proto/driver"
+	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/adapter/mongo"
 	"github.com/ride4Low/trip-service/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,7 +25,7 @@ func NewRepository(db *mongoDriver.Database) domain.Repository {
 	}
 }
 
-func (r *mongoRepository) SaveRideFare(ctx context.Context, rideFare *domain.RideFare) error {
+func (r *mongoRepository) SaveRideFare(ctx context.Context, rideFare *types.RideFare) error {
 	rideFare.CreatedAt = time.Now()
 	result, err := r.db.Collection(mongo.RideFaresCollection).InsertOne(ctx, rideFare)
 	if err != nil {
@@ -36,7 +37,7 @@ func (r *mongoRepository) SaveRideFare(ctx context.Context, rideFare *domain.Rid
 	return nil
 }
 
-func (r *mongoRepository) GetRideFareByID(ctx context.Context, id string) (*domain.RideFare, error) {
+func (r *mongoRepository) GetRideFareByID(ctx context.Context, id string) (*types.RideFare, error) {
 	_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func (r *mongoRepository) GetRideFareByID(ctx context.Context, id string) (*doma
 		return nil, result.Err()
 	}
 
-	var fare domain.RideFare
+	var fare types.RideFare
 	err = result.Decode(&fare)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func (r *mongoRepository) GetRideFareByID(ctx context.Context, id string) (*doma
 	return &fare, nil
 }
 
-func (r *mongoRepository) CreateTrip(ctx context.Context, trip *domain.Trip) (*domain.Trip, error) {
+func (r *mongoRepository) CreateTrip(ctx context.Context, trip *types.Trip) (*types.Trip, error) {
 	result, err := r.db.Collection(mongo.TripsCollection).InsertOne(ctx, trip)
 	if err != nil {
 		return nil, err
@@ -67,7 +68,7 @@ func (r *mongoRepository) CreateTrip(ctx context.Context, trip *domain.Trip) (*d
 	return trip, nil
 }
 
-func (r *mongoRepository) GetTripByID(ctx context.Context, id string) (*domain.Trip, error) {
+func (r *mongoRepository) GetTripByID(ctx context.Context, id string) (*types.Trip, error) {
 	_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -78,7 +79,7 @@ func (r *mongoRepository) GetTripByID(ctx context.Context, id string) (*domain.T
 		return nil, result.Err()
 	}
 
-	var trip domain.Trip
+	var trip types.Trip
 	err = result.Decode(&trip)
 	if err != nil {
 		return nil, err

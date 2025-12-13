@@ -8,7 +8,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/ride4Low/contracts/types"
-	"github.com/ride4Low/trip-service/internal/domain"
 )
 
 type Client struct {
@@ -21,7 +20,7 @@ func NewClient(baseURL string) *Client {
 	}
 }
 
-func (c *Client) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*domain.OsrmApiResponse, error) {
+func (c *Client) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate) (*types.OsrmApiResponse, error) {
 	url := fmt.Sprintf(
 		"%s/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
 		c.baseURL,
@@ -46,7 +45,7 @@ func (c *Client) GetRoute(ctx context.Context, pickup, dropoff types.Coordinate)
 		return nil, fmt.Errorf("OSRM request failed with status code: %d", resp.StatusCode)
 	}
 
-	var osrmResponse domain.OsrmApiResponse
+	var osrmResponse types.OsrmApiResponse
 	if err := sonic.Unmarshal(body, &osrmResponse); err != nil {
 		return nil, err
 	}

@@ -3,12 +3,13 @@ package service
 import (
 	"log"
 
+	"github.com/ride4Low/contracts/types"
 	"github.com/ride4Low/trip-service/internal/domain"
 )
 
-func (s *service) EstimatePackagesPriceWithRoute(route *domain.OsrmApiResponse) []*domain.RideFare {
+func (s *service) EstimatePackagesPriceWithRoute(route *types.OsrmApiResponse) []*types.RideFare {
 	baseFares := getBaseFares()
-	estimatedFares := make([]*domain.RideFare, len(baseFares))
+	estimatedFares := make([]*types.RideFare, len(baseFares))
 
 	for i, f := range baseFares {
 		estimatedFares[i] = estimateFareRoute(f, route)
@@ -17,8 +18,8 @@ func (s *service) EstimatePackagesPriceWithRoute(route *domain.OsrmApiResponse) 
 	return estimatedFares
 }
 
-func getBaseFares() []*domain.RideFare {
-	return []*domain.RideFare{
+func getBaseFares() []*types.RideFare {
+	return []*types.RideFare{
 		{
 			PackageSlug:       "suv",
 			TotalPriceInCents: 200,
@@ -38,7 +39,7 @@ func getBaseFares() []*domain.RideFare {
 	}
 }
 
-func estimateFareRoute(f *domain.RideFare, route *domain.OsrmApiResponse) *domain.RideFare {
+func estimateFareRoute(f *types.RideFare, route *types.OsrmApiResponse) *types.RideFare {
 	pricingCfg := domain.DefaultPricingConfig()
 	carPackagePrice := f.TotalPriceInCents
 
@@ -53,7 +54,7 @@ func estimateFareRoute(f *domain.RideFare, route *domain.OsrmApiResponse) *domai
 	totalPrice := carPackagePrice + distanceFare + timeFare
 	log.Printf("Total: %f\n", totalPrice)
 
-	return &domain.RideFare{
+	return &types.RideFare{
 		TotalPriceInCents: totalPrice,
 		PackageSlug:       f.PackageSlug,
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/ride4Low/contracts/events"
 	"github.com/ride4Low/contracts/pkg/rabbitmq"
-	"github.com/ride4Low/trip-service/internal/domain"
+	"github.com/ride4Low/contracts/types"
 )
 
 type TripEventPublisher struct {
@@ -21,7 +21,7 @@ func NewTripEventPublisher(publisher *rabbitmq.Publisher) TripEventPublisher {
 }
 
 // will be consumed by driver service to find available drivers
-func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *domain.Trip) error {
+func (p *TripEventPublisher) PublishTripCreated(ctx context.Context, trip *types.Trip) error {
 	payload := events.TripEventData{
 		Trip: trip.ToProto(),
 	}
